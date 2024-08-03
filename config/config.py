@@ -1,3 +1,4 @@
+import datetime
 import logging
 from dataclasses import dataclass
 
@@ -24,12 +25,25 @@ class Db:
 
 
 @dataclass
+class Time:
+    send_time: datetime.datetime
+
+
+@dataclass
+class Channels:
+    backup: int
+
+
+@dataclass
 class Config:
     bot: Bot
     db: Db
+    time: Time
+    channels: Channels
 
 
 def load_config() -> Config:
+    now = datetime.datetime.utcnow()
     load_dotenv()
     return Config(
         bot=Bot(
@@ -38,6 +52,19 @@ def load_config() -> Config:
         db=Db(
             url=getenv("DB_URL"),
         ),
+        time=Time(
+            datetime.datetime(
+                now.year,
+                now.month,
+                now.day,
+                int(getenv("SEND_HOURS")),
+                int(getenv("SEND_MINUTES")),
+                0,
+            ),
+        ),
+        channels=Channels(
+            backup=int(getenv("CHANNEL_BACKUP")),
+        )
     )
 
 

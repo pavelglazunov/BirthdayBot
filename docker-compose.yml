@@ -7,8 +7,8 @@ services:
     stop_signal: SIGINT
     env_file:
       - .env
-    volumes:
-      - /root/DB/main.db:/app/main.db
+#    volumes:
+#      - /root/DB/main.db:/app/main.db
       
 
       
