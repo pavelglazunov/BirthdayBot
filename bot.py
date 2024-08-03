@@ -6,12 +6,12 @@ from aiogram.client.default import DefaultBotProperties
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-import do_backup
 from config.config import config
 from do_backup import do_backup
 from src.handlers import routers
-from src.middlewares import DbSessionMiddleware, MessageInPrivateMiddleware
+from src.middlewares import DbSessionMiddleware, MessageInPrivateMiddleware, GetUserMiddleware
 from src.models import Base
+import sender
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +39,14 @@ async def main():
 
     dp.include_routers(*routers)
 
-    dp.message.outer_middleware(MessageInPrivateMiddleware())
+    # dp.message.outer_middleware(MessageInPrivateMiddleware())
 
     dp.update.middleware(DbSessionMiddleware(sessionmaker))
-
+    dp.message.middleware(GetUserMiddleware())
+    dp.callback_query.middleware(GetUserMiddleware())
 
     asyncio.create_task(do_backup(bot))
+    asyncio.create_task(sender.run(bot, sessionmaker))
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
